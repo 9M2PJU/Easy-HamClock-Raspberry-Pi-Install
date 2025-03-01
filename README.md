@@ -6,7 +6,7 @@
 [![Raspberry Pi](https://img.shields.io/badge/Raspberry%20Pi-C51A4A?style=flat&logo=Raspberry-Pi&logoColor=white)](https://www.raspberrypi.org/)
 [![Bash Script](https://img.shields.io/badge/Bash-4EAA25?style=flat&logo=GNU%20Bash&logoColor=white)](https://www.gnu.org/software/bash/)
 
-<img src="https://raw.githubusercontent.com/yourusername/hamclock-installer/main/assets/hamclock-logo.png" alt="HamClock Logo" width="200"/>
+<img src="https://raw.githubusercontent.com/9M2PJU/Easy-HamClock-Raspberry-Pi-Install/main/assets/hamclock-logo.png" alt="HamClock Logo" width="200"/>
 
 *A streamlined installation script for [HamClock](https://clearskyinstitute.com/ham/HamClock/) on Raspberry Pi OS*
 
@@ -19,7 +19,7 @@
 This script simplifies the process of installing HamClock, a feature-rich amateur radio clock application, on Raspberry Pi systems. The installer automates dependency installation, source code compilation, and configuration with a focus on hardware display support.
 
 <div align="center">
-<img src="https://raw.githubusercontent.com/yourusername/hamclock-installer/main/assets/hamclock-screenshot.png" alt="HamClock Screenshot" width="600"/>
+<img src="https://raw.githubusercontent.com/9M2PJU/Easy-HamClock-Raspberry-Pi-Install/main/assets/hamclock-screenshot.png" alt="HamClock Screenshot" width="600"/>
 </div>
 
 ## ✨ Features
@@ -42,23 +42,24 @@ This script simplifies the process of installing HamClock, a feature-rich amateu
 
 ```bash
 # Download the installer script
-wget https://raw.githubusercontent.com/yourusername/hamclock-installer/main/install-hamclock.sh
+wget https://raw.githubusercontent.com/9M2PJU/Easy-HamClock-Raspberry-Pi-Install/main/rpi-hc-install.sh
 
 # Make the script executable
-chmod +x install-hamclock.sh
+chmod +x rpi-hc-install.sh
 
 # Run the installer
-./install-hamclock.sh
+./rpi-hc-install.sh
 ```
 
 ## 🚀 Usage
 
-After installation, launch HamClock by typing:
+After installation, launch HamClock from the terminal by typing:
 ```bash
-hamclock
+hamclock &
 ```
+The `&` symbol runs HamClock in the background, allowing you to continue using the terminal.
 
-If you enabled autostart during installation, HamClock will launch automatically on system boot.
+If you enabled the autostart option during installation (recommended), HamClock will automatically launch after every system reboot without any manual intervention.
 
 ## 🔄 Modifications from Original
 
@@ -67,10 +68,11 @@ This installer has been streamlined from the original version:
 - ✅ **Hardware Display Focus**: Removed web-only access option
 - ✅ **Simplified Documentation**: Removed user guide installation option
 - ✅ **Optimized Process**: Streamlined installation flow
+- ✅ **Automatic Startup**: Configured for automatic launch on system boot
 
 ## 🛠️ Troubleshooting
 
-The installer creates a detailed log file (`install-hamclock.sh.log`) in the same directory as the script. If you encounter issues, check this log for error messages and diagnostic information.
+The installer creates a detailed log file (`rpi-hc-install.sh.log`) in the same directory as the script. If you encounter issues, check this log for error messages and diagnostic information.
 
 Common issues:
 - **Build Errors**: Ensure all dependencies were installed correctly
@@ -101,7 +103,7 @@ This installer script is provided under the same license as the original HamCloc
 
 ### 🌟 Enjoy using HamClock on your Raspberry Pi! 🌟
 
-[![GitHub Stars](https://img.shields.io/github/stars/yourusername/hamclock-installer?style=social)](https://github.com/yourusername/hamclock-installer)
-[![GitHub Forks](https://img.shields.io/github/forks/yourusername/hamclock-installer?style=social)](https://github.com/yourusername/hamclock-installer/fork)
+[![GitHub Stars](https://img.shields.io/github/stars/9M2PJU/Easy-HamClock-Raspberry-Pi-Install?style=social)](https://github.com/9M2PJU/Easy-HamClock-Raspberry-Pi-Install)
+[![GitHub Forks](https://img.shields.io/github/forks/9M2PJU/Easy-HamClock-Raspberry-Pi-Install?style=social)](https://github.com/9M2PJU/Easy-HamClock-Raspberry-Pi-Install/fork)
 
 </div>
