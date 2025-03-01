@@ -16,8 +16,6 @@
 
 This script simplifies the process of installing HamClock, a feature-rich amateur radio clock application, on Raspberry Pi systems. The installer automates dependency installation, source code compilation, and configuration with a focus on hardware display support.
 
-<div align="center">
-<img src="https://raw.githubusercontent.com/9M2PJU/Easy-HamClock-Raspberry-Pi-Install/main/assets/hamclock-screenshot.png" alt="HamClock Screenshot" width="600"/>
 </div>
 
 ## ✨ Features
