@@ -6,7 +6,7 @@
 [![Raspberry Pi](https://img.shields.io/badge/Raspberry%20Pi-C51A4A?style=flat&logo=Raspberry-Pi&logoColor=white)](https://www.raspberrypi.org/)
 [![Bash Script](https://img.shields.io/badge/Bash-4EAA25?style=flat&logo=GNU%20Bash&logoColor=white)](https://www.gnu.org/software/bash/)
 
-<img src="https://raw.githubusercontent.com/9M2PJU/Easy-HamClock-Raspberry-Pi-Install/main/assets/hamclock-logo.png" alt="HamClock Logo" width="200"/>
+<img src="<iframe src="https://clearskyinstitute.com/hamclock-live/live.html" alt="HamClock Logo" width="200"/>
 
 *A streamlined installation script for [HamClock](https://clearskyinstitute.com/ham/HamClock/) on Raspberry Pi OS*
 
