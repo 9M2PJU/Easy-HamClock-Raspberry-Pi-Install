@@ -7,7 +7,7 @@
 sudo apt-get update
 
 # Install required dependencies
-sudo apt-get -y install curl make g++ libx11-dev libgpiod-dev xdg-utils
+sudo apt-get -y install curl make g++ libx11-dev libgpiod-dev xdg-utils -y
 
 # Set up our mission log 📝
 LOGFN=$PWD/$(basename $0).log
