@@ -3,6 +3,7 @@
 # Original script by Elwood Downey, WB0OEW
 # Fancy version by 9M2PJU - Just adding fun stuff! That's all.
 # Makes installing HamClock more fun!
+
 # Update package lists
 sudo apt-get update
 
