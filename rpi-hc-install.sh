@@ -3,6 +3,11 @@
 # Original script by Elwood Downey, WB0OEW
 # Fancy version by 9M2PJU - Just adding fun stuff! That's all.
 # Makes installing HamClock more fun!
+# Update package lists
+sudo apt-get update
+
+# Install required dependencies
+sudo apt-get -y install curl make g++ libx11-dev libgpiod-dev xdg-utils
 
 # Set up our mission log 📝
 LOGFN=$PWD/$(basename $0).log
