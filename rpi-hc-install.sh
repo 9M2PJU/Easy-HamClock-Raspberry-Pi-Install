@@ -127,7 +127,7 @@ clear
 # Display welcome banner
 echo -e "\033[36m"
 echo "┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓"
-echo "┃  🕒 HamClock Installer for Raspberry Pi 🍓                                       ┃"
+echo "┃  🕒 HamClock Installer for Raspberry Pi 🍓                                      ┃"
 echo "┃  Original script by Elwood Downey, WB0OEW                                       ┃"
 echo "┃  Fancy version by 9M2PJU - Adding some fun and color to your installation!      ┃"
 echo "┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛"
