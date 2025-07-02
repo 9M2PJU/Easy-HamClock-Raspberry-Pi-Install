@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # 🕒 HamClock Installer & Uninstaller for Raspberry Pi 🍓
 # Original script by Elwood Downey, WB0OEW
-# Enhanced and beautified by 9M2PJU - for more smiles per install 😊
+# Rewritten and enhanced by 9M2PJU – now with 100% more fun & function 🚀
 
 LOGFN=$PWD/$(basename $0).log
 
@@ -59,6 +59,7 @@ function largestsize () {
     echo $SW $SH $HCW $HCH
 }
 
+# Entry Banner
 clear
 echo -e "\033[36m"
 echo "┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓"
@@ -67,6 +68,7 @@ echo "┃  Original by Elwood Downey, WB0OEW | Fun Version by 9M2PJU            
 echo "┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛"
 echo -e "\033[0m"
 
+# Menu
 PS3="🤔 What would you like to do? "
 options=("Install HamClock" "Uninstall HamClock" "Exit")
 select opt in "${options[@]}"; do
@@ -78,6 +80,7 @@ select opt in "${options[@]}"; do
     esac
 done
 
+# Uninstall section
 if [[ "$ACTION" == "uninstall" ]]; then
     inform "🧹 Uninstalling HamClock..."
 
@@ -104,6 +107,7 @@ if [[ "$ACTION" == "uninstall" ]]; then
     exit 0
 fi
 
+# Safety checks
 if [[ "$SUDO_USER" != "" ]]; then
     inform "⛔ Do not run this with sudo! We'll ask for permissions when needed."
     exit 1
@@ -114,16 +118,19 @@ if ! egrep -qs 'bullseye|bookworm' /etc/os-release ; then
     exit 1
 fi
 
+# Dependencies
 inform "📦 Installing required packages..."
 sudo apt-get update -y
 sudo apt-get install -y make g++ libx11-dev x11-utils xserver-xorg linux-libc-dev gpiod libgpiod-dev curl openssl xdg-utils
 
+# Download HamClock
 TBALL=ESPHamClock.tgz
 TBURL=https://clearskyinstitute.com/ham/HamClock/$TBALL
 rm -f $TBALL
 inform "🌐 Downloading HamClock..."
 curl --silent --show-error --output $TBALL $TBURL || { inform "❌ Download failed!"; exit 1; }
 
+# Extract
 XDIR=ESPHamClock
 rm -rf $XDIR
 inform "📂 Unpacking HamClock..."
@@ -131,6 +138,7 @@ tar xf $TBALL || { inform "❌ Failed to unpack!"; exit 1; }
 rm -f $TBALL
 cd $XDIR
 
+# Resolution detection and manual selection
 read SW SH LHCW LHCH < <(largestsize)
 inform "🖥️ Detected screen size: ${SW}x${SH}"
 
@@ -152,9 +160,11 @@ CHOSEN_H=${size#*x}
 if (( CHOSEN_W > LHCW || CHOSEN_H > LHCH )); then
     inform "⚠️ Warning: Your screen may not fully support ${size} resolution."
 fi
+
 HC_BUILD="hamclock-$size"
 inform "✅ Selected build size: $size"
 
+# Build
 NLOGLINES=114
 inform "🏗️ Building $HC_BUILD..."
 WC0=$(wc -l < $LOGFN)
@@ -170,9 +180,11 @@ done
 wait $job || { inform "❌ Build failed"; exit 1; }
 echo -e "\n✅ Build complete!"
 
+# Install
 inform "📥 Installing HamClock..."
 sudo make install
 
+# Desktop icon
 if [[ -d $HOME/Desktop && -f hamclock.desktop ]]; then
     if ask "Add a shiny HamClock desktop icon"; then
         mkdir -p "$HOME/.hamclock"
@@ -182,12 +194,14 @@ if [[ -d $HOME/Desktop && -f hamclock.desktop ]]; then
     fi
 fi
 
+# Man page
 if [[ -d /usr/local/share/man/man1 ]]; then
     if ask "Install HamClock manual page"; then
         [[ -f hamclock.man ]] && sudo cp hamclock.man /usr/local/share/man/man1/hamclock.1 || sudo cp hamclock.1 /usr/local/share/man/man1/
     fi
 fi
 
+# Autostart
 if ask "Start HamClock on boot"; then
     mkdir -p "$HOME/.config/autostart"
     cp -f hamclock.desktop "$HOME/.config/autostart/"
@@ -195,6 +209,7 @@ else
     rm -f "$HOME/.config/autostart/hamclock.desktop"
 fi
 
+# Final message
 show_success
 inform "⏰ You may now run HamClock by typing 'hamclock' or using the desktop icon."
 echo -e "\n👋 Happy ham radio clocking! 73's from 9M2PJU\n"
