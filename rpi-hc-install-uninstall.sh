@@ -3,10 +3,8 @@
 # Original script by Elwood Downey, WB0OEW
 # Enhanced and beautified by 9M2PJU - for more smiles per install 😊
 
-# Set up our mission log 📝
 LOGFN=$PWD/$(basename $0).log
 
-# 📢 Print blank line then $*
 function inform () {
     echo "" >> $LOGFN
     echo "$*" >> $LOGFN
@@ -14,7 +12,6 @@ function inform () {
     echo -e "🔔 \033[1m$*\033[0m"
 }
 
-# 🤔 Ask "$1? [y/n]" and return 0 if yes
 function ask () {
     echo "" >> $LOGFN
     echo "❓ asking: $1?" >> $LOGFN
@@ -27,7 +24,6 @@ function ask () {
     [[ "$ANS" == "y" ]]
 }
 
-# 🎮 Show a progress bar
 function show_progress {
     local width=50
     local percent=$1
@@ -39,7 +35,6 @@ function show_progress {
     printf "] %3d%%\r" $percent
 }
 
-# 🎉 Success banner
 function show_success {
     echo ""
     echo -e "\033[32m  _   _                  _____ _            _      \033[0m"
@@ -52,7 +47,6 @@ function show_success {
     echo ""
 }
 
-# 📐 Find largest supported hamclock build size
 function largestsize () {
     read SW SH < <(xdpyinfo -display :0 | perl -ne '/dimensions: *(\d+)x(\d+)/ and print "$1 $2\n"')
     HCW=800; HCH=480
@@ -65,7 +59,6 @@ function largestsize () {
     echo $SW $SH $HCW $HCH
 }
 
-# 🎯 Entry Menu
 clear
 echo -e "\033[36m"
 echo "┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓"
@@ -85,7 +78,6 @@ select opt in "${options[@]}"; do
     esac
 done
 
-# 🔧 UNINSTALL MODE
 if [[ "$ACTION" == "uninstall" ]]; then
     inform "🧹 Uninstalling HamClock..."
 
@@ -112,31 +104,26 @@ if [[ "$ACTION" == "uninstall" ]]; then
     exit 0
 fi
 
-# 🔐 Sudo check
 if [[ "$SUDO_USER" != "" ]]; then
     inform "⛔ Do not run this with sudo! We'll ask for permissions when needed."
     exit 1
 fi
 
-# 🧠 Sanity check for Pi OS
 if ! egrep -qs 'bullseye|bookworm' /etc/os-release ; then
     inform "⛔ This script only works on Raspberry Pi OS bullseye or bookworm."
     exit 1
 fi
 
-# 📥 Install packages
 inform "📦 Installing required packages..."
 sudo apt-get update -y
 sudo apt-get install -y make g++ libx11-dev x11-utils xserver-xorg linux-libc-dev gpiod libgpiod-dev curl openssl xdg-utils
 
-# 🔽 Download HamClock
 TBALL=ESPHamClock.tgz
 TBURL=https://clearskyinstitute.com/ham/HamClock/$TBALL
 rm -f $TBALL
 inform "🌐 Downloading HamClock..."
 curl --silent --show-error --output $TBALL $TBURL || { inform "❌ Download failed!"; exit 1; }
 
-# 📂 Extract
 XDIR=ESPHamClock
 rm -rf $XDIR
 inform "📂 Unpacking HamClock..."
@@ -144,32 +131,30 @@ tar xf $TBALL || { inform "❌ Failed to unpack!"; exit 1; }
 rm -f $TBALL
 cd $XDIR
 
-# 📏 Determine size
 read SW SH LHCW LHCH < <(largestsize)
 inform "🖥️ Detected screen size: ${SW}x${SH}"
+
 if (( LHCW < 800 || LHCH < 480 )); then
     inform "⛔ HamClock requires minimum 800x480 resolution."
     exit 1
 fi
 
-# 🧠 Choose size
-if (( LHCW == 800 )); then
-    size="800x480"
-elif (( LHCW == 1600 )); then
-    PS3="🔢 Choose display size: "
-    select size in "800x480" "1600x960"; do [[ $REPLY =~ ^[1-2]$ ]] && break; done
-elif (( LHCW == 2400 )); then
-    PS3="🔢 Choose display size: "
-    select size in "800x480" "1600x960" "2400x1440"; do [[ $REPLY =~ ^[1-3]$ ]] && break; done
-else
-    PS3="🔢 Choose display size: "
-    select size in "800x480" "1600x960" "2400x1440" "3200x1920"; do [[ $REPLY =~ ^[1-4]$ ]] && break; done
-fi
+PS3="🔢 Choose your preferred HamClock display size: "
+select size in "800x480" "1600x960" "2400x1440" "3200x1920"; do
+    case $REPLY in
+        1|2|3|4) break ;;
+        *) echo "❌ Invalid selection. Try again." ;;
+    esac
+done
 size=$(echo $size | cut -d' ' -f1)
+CHOSEN_W=${size%x*}
+CHOSEN_H=${size#*x}
+if (( CHOSEN_W > LHCW || CHOSEN_H > LHCH )); then
+    inform "⚠️ Warning: Your screen may not fully support ${size} resolution."
+fi
 HC_BUILD="hamclock-$size"
 inform "✅ Selected build size: $size"
 
-# 🔨 Build
 NLOGLINES=114
 inform "🏗️ Building $HC_BUILD..."
 WC0=$(wc -l < $LOGFN)
@@ -185,11 +170,9 @@ done
 wait $job || { inform "❌ Build failed"; exit 1; }
 echo -e "\n✅ Build complete!"
 
-# 📥 Install
 inform "📥 Installing HamClock..."
 sudo make install
 
-# 🖼️ Optional desktop icon
 if [[ -d $HOME/Desktop && -f hamclock.desktop ]]; then
     if ask "Add a shiny HamClock desktop icon"; then
         mkdir -p "$HOME/.hamclock"
@@ -199,14 +182,12 @@ if [[ -d $HOME/Desktop && -f hamclock.desktop ]]; then
     fi
 fi
 
-# 📚 Optional man page
 if [[ -d /usr/local/share/man/man1 ]]; then
     if ask "Install HamClock manual page"; then
         [[ -f hamclock.man ]] && sudo cp hamclock.man /usr/local/share/man/man1/hamclock.1 || sudo cp hamclock.1 /usr/local/share/man/man1/
     fi
 fi
 
-# 🚀 Autostart option
 if ask "Start HamClock on boot"; then
     mkdir -p "$HOME/.config/autostart"
     cp -f hamclock.desktop "$HOME/.config/autostart/"
@@ -214,7 +195,6 @@ else
     rm -f "$HOME/.config/autostart/hamclock.desktop"
 fi
 
-# 🎉 Done
 show_success
 inform "⏰ You may now run HamClock by typing 'hamclock' or using the desktop icon."
 echo -e "\n👋 Happy ham radio clocking! 73's from 9M2PJU\n"
