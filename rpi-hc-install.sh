@@ -1,108 +1,40 @@
 #!/usr/bin/env bash
-# 🕒 HamClock Installer for Raspberry Pi 🍓
+# 🕒 HamClock Installer & Uninstaller for Raspberry Pi 🍓
 # Original script by Elwood Downey, WB0OEW
-# Fancy version by 9M2PJU - Just adding fun stuff! That's all.
-# Makes installing HamClock more fun!
+# Rewritten and enhanced by 9M2PJU – now with 100% more fun & function 🚀
 
-# Update package lists
-sudo apt-get update
-
-# Install required dependencies
-sudo apt-get -y install curl make g++ libx11-dev libgpiod-dev xdg-utils -y
-
-# Set up our mission log 📝
 LOGFN=$PWD/$(basename $0).log
 
-# 📐 Find largest supported hamclock build size
-function largestsize ()
-{
-    echo "🔍 Detecting your screen dimensions..." >&2
-    # get screen size
-    read SW SH < <(xdpyinfo -display :0 | perl -ne '/dimensions: *(\d+)x(\d+)/ and print "$1 $2\n"')
-
-    # find HC fractions in each dimension
-    HCW=800
-    HCH=480
-    HCWX=$(($SW/$HCW))
-    HCHX=$(($SH/$HCH))
-
-    # use smaller fraction so both dimensions fit
-    if (( $HCWX >= $HCHX )) ; then
-        HCW=$(($HCW * $HCHX))
-        HCH=$(($HCH * $HCHX))
-    else
-        HCW=$(($HCW * $HCWX))
-        HCH=$(($HCH * $HCWX))
-    fi
-
-    echo $SW $SH $HCW $HCH
-}
-
-# 🤔 Ask "$1? [y/n] " then return 0 if respond y or 1 if respond n
-function ask ()
-{
+function inform () {
     echo "" >> $LOGFN
-    echo "❓ asking: $1?" >> $LOGFN
-
-    ANS=x
-    while [ "$ANS" != "y" ] && [ "$ANS" != "n" ]; do
-        echo ""
-        echo -en "❓ \033[1m$1?\033[0m [y/n] "
-        read ANS
-    done
-
-    echo "answer: $ANS" >> $LOGFN
-
-    [ "$ANS" = "y" ]
-}
-
-# 📢 Print blank line then $*
-function inform ()
-{
-    echo "" >> $LOGFN
-    echo $* >> $LOGFN
-
+    echo "$*" >> $LOGFN
     echo ""
     echo -e "🔔 \033[1m$*\033[0m"
 }
 
-# 🖥️ Dump rpi configuration
-function dumpConfig ()
-{
-    echo "📋 os-release"
-    cat /etc/os-release
-
-    echo "📋 uname"
-    uname -a
-
-    echo "📋 free -m"
-    free -m
-
-    echo "📋 df"
-    df
-
-    echo "📋 ping home"
-    ping -c 3 clearskyinstitute.com
+function ask () {
+    echo "" >> $LOGFN
+    echo "❓ asking: $1?" >> $LOGFN
+    local ANS=x
+    while [[ "$ANS" != "y" && "$ANS" != "n" ]]; do
+        echo -en "❓ \033[1m$1?\033[0m [y/n] "
+        read -r ANS
+    done
+    echo "answer: $ANS" >> $LOGFN
+    [[ "$ANS" == "y" ]]
 }
 
-# 🎮 Show a progress bar
 function show_progress {
     local width=50
     local percent=$1
-    local num_chars=$(($width * $percent / 100))
-    
+    local num_chars=$((width * percent / 100))
     printf "["
-    for ((i=0; i<$width; i++)); do
-        if [ $i -lt $num_chars ]; then
-            printf "="
-        else
-            printf " "
-        fi
+    for ((i=0; i<width; i++)); do
+        if (( i < num_chars )); then printf "="; else printf " "; fi
     done
     printf "] %3d%%\r" $percent
 }
 
-# 🎉 Show success message with ASCII art
 function show_success {
     echo ""
     echo -e "\033[32m  _   _                  _____ _            _      \033[0m"
@@ -111,218 +43,173 @@ function show_success {
     echo -e "\033[32m |  _  | (_| | | | | | | |____| | (_) | (__|   <   \033[0m"
     echo -e "\033[32m |_| |_|\__,_|_| |_| |_|\_____|_|\___/ \___|_|\_\\  \033[0m"
     echo -e "\033[32m                                                    \033[0m"
-    echo -e "\033[32m          Successfully Installed! 🚀               \033[0m"
+    echo -e "\033[32m         Successfully Installed! 🚀                \033[0m"
     echo ""
 }
 
-######################################################################################
-#
-# 🚀 Execution starts here
-#
-######################################################################################
+function largestsize () {
+    read SW SH < <(xdpyinfo -display :0 | perl -ne '/dimensions: *(\d+)x(\d+)/ and print "$1 $2\n"')
+    HCW=800; HCH=480
+    HCWX=$((SW / HCW)); HCHX=$((SH / HCH))
+    if (( HCWX >= HCHX )); then
+        HCW=$((HCW * HCHX)); HCH=$((HCH * HCHX))
+    else
+        HCW=$((HCW * HCWX)); HCH=$((HCH * HCWX))
+    fi
+    echo $SW $SH $HCW $HCH
+}
 
-# Clear screen for a clean start
+# Entry Banner
 clear
-
-# Display welcome banner
 echo -e "\033[36m"
 echo "┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓"
-echo "┃  🕒 HamClock Installer for Raspberry Pi 🍓                                      ┃"
-echo "┃  Original script by Elwood Downey, WB0OEW                                       ┃"
-echo "┃  Fancy version by 9M2PJU - Adding some fun and color to your installation!      ┃"
+echo "┃  🕒 HamClock Installer & Uninstaller for Raspberry Pi 🍓                        ┃"
+echo "┃  Original by Elwood Downey, WB0OEW | Fun Version by 9M2PJU                     ┃"
 echo "┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛"
 echo -e "\033[0m"
 
-# sudo check 🔒
-if [ "$SUDO_USER" != "" ] ; then
+# Menu
+PS3="🤔 What would you like to do? "
+options=("Install HamClock" "Uninstall HamClock" "Exit")
+select opt in "${options[@]}"; do
+    case $opt in
+        "Install HamClock") ACTION="install"; break ;;
+        "Uninstall HamClock") ACTION="uninstall"; break ;;
+        "Exit") echo "👋 Goodbye!"; exit 0 ;;
+        *) echo "❌ Invalid option $REPLY" ;;
+    esac
+done
+
+# Uninstall section
+if [[ "$ACTION" == "uninstall" ]]; then
+    inform "🧹 Uninstalling HamClock..."
+
+    BIN_PATH="/usr/local/bin/hamclock"
+    MAN_PATH="/usr/local/share/man/man1/hamclock.1"
+    AUTOSTART="$HOME/.config/autostart/hamclock.desktop"
+    DESKTOP_ICON="$HOME/Desktop/hamclock.desktop"
+    ICON_IMG="$HOME/.hamclock/hamclock.png"
+
+    sudo rm -f "$BIN_PATH" && echo "✅ Removed $BIN_PATH"
+    rm -f "$AUTOSTART" && echo "✅ Removed autostart file"
+    rm -f "$DESKTOP_ICON" && echo "✅ Removed desktop icon"
+    rm -f "$ICON_IMG" && echo "✅ Removed icon image"
+
+    if [[ -f "$MAN_PATH" ]]; then
+        if ask "Remove the manual page too"; then
+            sudo rm -f "$MAN_PATH"
+            echo "✅ Removed man page"
+        fi
+    fi
+
+    inform "✅ HamClock has been fully uninstalled."
+    echo -e "\n👋 Goodbye and 73's!\n"
+    exit 0
+fi
+
+# Safety checks
+if [[ "$SUDO_USER" != "" ]]; then
     inform "⛔ Do not run this with sudo! We'll ask for permissions when needed."
     exit 1
 fi
 
-# Really a pi? 🍓
-OSR=/etc/os-release
-if ! egrep -qs 'bullseye|bookworm' $OSR ; then
+if ! egrep -qs 'bullseye|bookworm' /etc/os-release ; then
     inform "⛔ This script only works on Raspberry Pi OS bullseye or bookworm."
     exit 1
 fi
 
-# Fresh log 📝
-rm -f $LOGFN
+# Dependencies
+inform "📦 Installing required packages..."
+sudo apt-get update -y
+sudo apt-get install -y make g++ libx11-dev x11-utils xserver-xorg linux-libc-dev gpiod libgpiod-dev curl openssl xdg-utils
 
-# Really do it? 🤔
-inform "🍓 This magical script will install HamClock on your Raspberry Pi!"
-if ! ask "Ready for liftoff" ; then 
-    echo -e "\n👋 Maybe next time! Goodbye!"
-    exit 1
-fi
-
-# Check for another instance 🕵️
-if sudo pkill -0 '^hamclock$' ; then
-    inform "⚠️ Another hamclock seems to be running already."
-    inform "Please exit the existing hamclock then retry this script."
-    exit 0
-fi
-
-# Inform log file 📋
-inform "📝 A transcript of this installation will be saved in $LOGFN"
-echo -n "🕒 HamClock installation begins at " >> $LOGFN
-date -u >> $LOGFN
-echo "🔍 Gathering system information..." >&2
-dumpConfig >> $LOGFN
-
-# Insure necessary helper packages are installed 📦
-inform "📦 Installing required helper packages..."
-PKGS="\
-    make \
-    g++ \
-    libx11-dev \
-    x11-utils \
-    xserver-xorg \
-    linux-libc-dev \
-    gpiod \
-    libgpiod-dev \
-    curl \
-    openssl \
-    xdg-utils"
-echo "🔄 Updating package lists..." >&2
-sudo apt-get -y update >> $LOGFN 2>&1
-echo "📥 Installing packages..." >&2
-sudo apt-get -y install $PKGS >> $LOGFN 2>&1
-if (( $? != 0 )) ; then echo "❌ Error loading packages"; exit 1; fi
-echo "✅ Packages installed successfully!" >&2
-
-# Download fresh program source 📥
+# Download HamClock
 TBALL=ESPHamClock.tgz
 TBURL=https://clearskyinstitute.com/ham/HamClock/$TBALL
 rm -f $TBALL
-inform "📥 Downloading $TBURL..."
-echo "🌐 Contacting server..." >&2
-if ! curl --silent --show-error --output $TBALL $TBURL >> $LOGFN 2>&1 ; then
-    inform "❌ Error downloading $TBURL -- see $LOGFN"
-    exit 1
-fi
-echo "✅ Download complete!" >&2
+inform "🌐 Downloading HamClock..."
+curl --silent --show-error --output $TBALL $TBURL || { inform "❌ Download failed!"; exit 1; }
 
-# Explode 💥
+# Extract
 XDIR=ESPHamClock
-rm -fr $XDIR
-inform "📂 Unpacking $TBALL into $XDIR..."
-if ! tar xf $TBALL >> $LOGFN 2>&1 ; then inform "❌ Error unpacking archive -- see $LOGFN"; exit 1; fi
-rm $TBALL
-echo "✅ Unpacked successfully!" >&2
-
-# cd inside for make
+rm -rf $XDIR
+inform "📂 Unpacking HamClock..."
+tar xf $TBALL || { inform "❌ Failed to unpack!"; exit 1; }
+rm -f $TBALL
 cd $XDIR
 
-# Ask desired size from ones that fit unless it can only be 800x480 📏
+# Resolution detection and manual selection
 read SW SH LHCW LHCH < <(largestsize)
-inform "🖥️ Your display size appears to be ${SW}x${SH}."
-if (( $LHCW < 800 || $LHCH < 480 )) ; then
-    inform "⛔ HamClock requires at least 800x480 display."
-    exit
-elif (( $LHCW == 800 )) ; then
-    size="800x480"
-    echo "🎯 Your display can fit HamClock at 800x480" >&2
-elif (( $LHCW == 1600 )) ; then
-    echo -e "\n🎛️ \033[1mSize Selection\033[0m - Pick your preferred display size:" >&2
-    PS3="🔢 Enter your choice (1-2): "
-    select size in "800x480 (Standard)" "1600x960 (Large)"; do
-        if (( $REPLY >= 1 && $REPLY <= 2 )) ; then break; fi
-    done
-elif (( $LHCW == 2400 )) ; then
-    echo -e "\n🎛️ \033[1mSize Selection\033[0m - Pick your preferred display size:" >&2
-    PS3="🔢 Enter your choice (1-3): "
-    select size in "800x480 (Standard)" "1600x960 (Large)" "2400x1440 (Extra Large)" ; do
-        if (( $REPLY >= 1 && $REPLY <= 3 )) ; then break; fi
-    done
-else
-    echo -e "\n🎛️ \033[1mSize Selection\033[0m - Pick your preferred display size:" >&2
-    PS3="🔢 Enter your choice (1-4): "
-    select size in "800x480 (Standard)" "1600x960 (Large)" "2400x1440 (Extra Large)" "3200x1920 (Massive)"; do
-        if (( $REPLY >= 1 && $REPLY <= 4 )) ; then break; fi
-    done
-fi
-size=$(echo $size | cut -d' ' -f1)
-HC_BUILD="hamclock-$size"
-echo -e "✅ Selected size: \033[1m$size\033[0m" >&2
+inform "🖥️ Detected screen size: ${SW}x${SH}"
 
-# Build with fancy progress indication 🏗️
-let NLOGLINES=114
+if (( LHCW < 800 || LHCH < 480 )); then
+    inform "⛔ HamClock requires minimum 800x480 resolution."
+    exit 1
+fi
+
+PS3="🔢 Choose your preferred HamClock display size: "
+select size in "800x480" "1600x960" "2400x1440" "3200x1920"; do
+    case $REPLY in
+        1|2|3|4) break ;;
+        *) echo "❌ Invalid selection. Try again." ;;
+    esac
+done
+size=$(echo $size | cut -d' ' -f1)
+CHOSEN_W=${size%x*}
+CHOSEN_H=${size#*x}
+if (( CHOSEN_W > LHCW || CHOSEN_H > LHCH )); then
+    inform "⚠️ Warning: Your screen may not fully support ${size} resolution."
+fi
+
+HC_BUILD="hamclock-$size"
+inform "✅ Selected build size: $size"
+
+# Build
+NLOGLINES=114
 inform "🏗️ Building $HC_BUILD..."
 WC0=$(wc -l < $LOGFN)
-NPROC=$(getconf _NPROCESSORS_ONLN)                                              
-let MAKEJ="$NPROC>1?$NPROC-1:1"
-echo "🔨 Running make -j $MAKEJ $HC_BUILD" >> $LOGFN
+NPROC=$(getconf _NPROCESSORS_ONLN)
+MAKEJ=$((NPROC > 1 ? NPROC - 1 : 1))
 make -j $MAKEJ $HC_BUILD >> $LOGFN 2>&1 &
 job=$!
-
-echo -e "⚙️ Building with $MAKEJ processor(s)..." >&2
 while kill -0 $job 2>/dev/null; do
     sleep .5
-    let percent="100 * ( $(wc -l < $LOGFN) - $WC0 ) / $NLOGLINES"
+    percent=$((100 * ($(wc -l < $LOGFN) - WC0) / NLOGLINES))
     show_progress $percent
 done
-echo -e "\n✅ Build complete!" >&2
-if ! wait %1 >> $LOGFN 2>&1 ; then inform "❌ Build failed -- see $LOGFN"; exit 1; fi
+wait $job || { inform "❌ Build failed"; exit 1; }
+echo -e "\n✅ Build complete!"
 
-# Install 🔧
+# Install
 inform "📥 Installing HamClock..."
-if ! sudo make install >> $LOGFN 2>&1 ; then inform "❌ Install failed -- see $LOGFN"; exit 1; fi
-echo "✅ Installation successful!" >&2
+sudo make install
 
-# Icon? 🖼️
-if [ -d $HOME/Desktop ] ; then
-    HCDT=$HOME/Desktop/hamclock.desktop
-    HCPNG=$HOME/.hamclock/hamclock.png
-    if ask "Add a shiny HamClock desktop icon" ; then
-        echo "🖼️ Creating desktop icon..." >&2
-        mkdir -p $HOME/.hamclock
-        rm -f $HCDT $HCPNG
-        cp hamclock.png $HCPNG
-        sed -e "s^Icon.*^Icon=$HOME/.hamclock/hamclock.png^" < hamclock.desktop > $HCDT
-        chmod u+x $HCDT
-        echo "✅ Desktop icon created!" >&2
-    else
-        rm -f $HCDT $HCPNG
+# Desktop icon
+if [[ -d $HOME/Desktop && -f hamclock.desktop ]]; then
+    if ask "Add a shiny HamClock desktop icon"; then
+        mkdir -p "$HOME/.hamclock"
+        cp hamclock.png "$HOME/.hamclock/hamclock.png"
+        sed "s^Icon=.*^Icon=$HOME/.hamclock/hamclock.png^" hamclock.desktop > "$HOME/Desktop/hamclock.desktop"
+        chmod +x "$HOME/Desktop/hamclock.desktop"
     fi
 fi
 
-# Man page? 📚
-MPATH=/usr/local/share/man/man1
-if [ -d $MPATH ] && ask "Install the helpful HamClock manual page" ; then
-    echo "📚 Installing manual page..." >&2
-    # name changed from .man to .1 as of 2.98
-    if [ -r hamclock.man ] ; then
-        sudo cp hamclock.man $MPATH/hamclock.1
-    else
-        sudo cp hamclock.1 $MPATH
+# Man page
+if [[ -d /usr/local/share/man/man1 ]]; then
+    if ask "Install HamClock manual page"; then
+        [[ -f hamclock.man ]] && sudo cp hamclock.man /usr/local/share/man/man1/hamclock.1 || sudo cp hamclock.1 /usr/local/share/man/man1/
     fi
-    echo "✅ Manual page installed!" >&2
 fi
 
-# Start on boot? 🚀
-if ask "Start HamClock automatically when your Pi boots up" ; then
-    echo "🚀 Setting up autostart..." >&2
-    # use desktop system
-    DOTCFG=$HOME/.config
-    if [ -d $DOTCFG ] ; then
-        ASPATH=$DOTCFG/autostart
-        mkdir -p $ASPATH
-        cp -f hamclock.desktop $ASPATH
-        echo "✅ Autostart configured!" >&2
-    else
-        inform "❌ Error: $DOTCFG does not exist"
-    fi
+# Autostart
+if ask "Start HamClock on boot"; then
+    mkdir -p "$HOME/.config/autostart"
+    cp -f hamclock.desktop "$HOME/.config/autostart/"
 else
-    # undo autostarting
-    echo "🛑 Removing any existing autostart configuration..." >&2
-    rm -f $HOME/.config/autostart/hamclock.desktop
+    rm -f "$HOME/.config/autostart/hamclock.desktop"
 fi
 
-# Success! 🎉
+# Final message
 show_success
-inform "🎊 HamClock installation is complete! 🎊"
 inform "⏰ You may now run HamClock by typing 'hamclock' or using the desktop icon."
-echo -e "\n📡 All credits for the original script go to Elwood Downey, WB0OEW"
-echo -e "📻 9M2PJU just made it fancy. That's all!"
-echo -e "\n👋 Happy ham radio clocking! 73's!\n"
+echo -e "\n👋 Happy ham radio clocking! 73's from 9M2PJU\n"
